@@ -30,4 +30,21 @@ describe('Denial of Service via a zero-length entry', () => {
       type: 'icns',
     })
   })
+
+  it('advances by a full entry header even when the length is smaller than that', () => {
+    // Two back-to-back entries, each declaring a length of 1 (smaller than
+    // the 8-byte entry header). Advancing by the declared length instead of
+    // the header size would turn this into a slow, unbounded byte-by-byte
+    // scan on a large file instead of a bounded one.
+    const entry = [...ascii('xxxx'), ...u32be(1)]
+    const buffer = new Uint8Array([
+      ...ascii('icns'),
+      ...u32be(8 + entry.length * 2),
+      ...entry,
+      ...entry,
+    ])
+
+    const result = imageSize(buffer) as { images: unknown[] }
+    assert.strictEqual(result.images.length, 2)
+  })
 })

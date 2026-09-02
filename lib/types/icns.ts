@@ -96,8 +96,8 @@ export const ICNS: IImage = {
       const imageHeader = readImageHeader(input, imageOffset)
       const imageSize = getImageSize(imageHeader[0])
       images.push(imageSize)
-      // Guard against a zero-valued entry length causing an infinite loop
-      imageOffset += imageHeader[1] > 0 ? imageHeader[1] : SIZE_ENTRY_HEADER
+      // Guard against a too-small entry length causing a slow, unbounded loop
+      imageOffset += Math.max(imageHeader[1], SIZE_ENTRY_HEADER)
     }
 
     if (images.length === 0) {
