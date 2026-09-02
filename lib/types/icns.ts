@@ -21,6 +21,7 @@ const FILE_LENGTH_OFFSET = 4 // MSB => BIG ENDIAN
  * | 8      | n    | Icon data                                                        |
  */
 const ENTRY_LENGTH_OFFSET = 4 // MSB => BIG ENDIAN
+const SIZE_ENTRY_HEADER = 4 + 4 // 8
 
 const ICON_TYPE_SIZE: Record<string, number> = {
   ICON: 32,
@@ -95,7 +96,8 @@ export const ICNS: IImage = {
       const imageHeader = readImageHeader(input, imageOffset)
       const imageSize = getImageSize(imageHeader[0])
       images.push(imageSize)
-      imageOffset += imageHeader[1]
+      // Guard against a zero-valued entry length causing an infinite loop
+      imageOffset += imageHeader[1] > 0 ? imageHeader[1] : SIZE_ENTRY_HEADER
     }
 
     if (images.length === 0) {
