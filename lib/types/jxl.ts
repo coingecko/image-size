@@ -1,6 +1,6 @@
 import type { IImage, ISize } from './interface'
 import { JXLStream } from './jxl-stream'
-import { findBox, toUTF8String } from './utils'
+import { advanceBox, findBox, toUTF8String } from './utils'
 
 /** Extracts the codestream from a containerized JPEG XL image */
 function extractCodestream(input: Uint8Array): Uint8Array | undefined {
@@ -27,8 +27,7 @@ function extractPartialStreams(input: Uint8Array): Uint8Array[] {
     partialStreams.push(
       input.slice(jxlpBox.offset + 12, jxlpBox.offset + jxlpBox.size),
     )
-    // Guard against zero-size boxes causing an infinite loop
-    offset = jxlpBox.offset + (jxlpBox.size > 0 ? jxlpBox.size : 8)
+    offset = advanceBox(jxlpBox.offset, jxlpBox.size)
   }
   return partialStreams
 }

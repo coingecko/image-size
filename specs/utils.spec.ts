@@ -156,5 +156,22 @@ describe('Utils', () => {
       const result = findBox(input, 'test', 0)
       assert.equal(result, undefined)
     })
+
+    it('advances by the full header size when a non-matching box declares a smaller size', () => {
+      // A non-matching box declaring size 1 (smaller than its own 8-byte
+      // header), followed immediately by the box being searched for.
+      // Advancing by the declared size instead of the header size would
+      // scan the same bytes repeatedly instead of skipping past it.
+      const skippedBox = new Uint8Array([0, 0, 0, 1, 111, 116, 104, 114]) // size 1, "othr"
+      const targetBox = new Uint8Array([0, 0, 0, 8, 116, 101, 115, 116]) // size 8, "test"
+      const input = new Uint8Array([...skippedBox, ...targetBox])
+
+      const result = findBox(input, 'test', 0)
+      assert.deepEqual(result, {
+        name: 'test',
+        offset: 8,
+        size: 8,
+      })
+    })
   })
 })
