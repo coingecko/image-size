@@ -57,7 +57,8 @@ export const HEIF: IImage = {
 
       images.push({ height, width })
 
-      currentOffset = ispeBox.offset + ispeBox.size
+      // Guard against zero-size boxes causing an infinite loop
+      currentOffset = ispeBox.offset + (ispeBox.size > 0 ? ispeBox.size : 8)
     }
 
     if (images.length === 0) {

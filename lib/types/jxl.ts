@@ -27,7 +27,8 @@ function extractPartialStreams(input: Uint8Array): Uint8Array[] {
     partialStreams.push(
       input.slice(jxlpBox.offset + 12, jxlpBox.offset + jxlpBox.size),
     )
-    offset = jxlpBox.offset + jxlpBox.size
+    // Guard against zero-size boxes causing an infinite loop
+    offset = jxlpBox.offset + (jxlpBox.size > 0 ? jxlpBox.size : 8)
   }
   return partialStreams
 }
