@@ -63,6 +63,8 @@ export function readUInt(
   return methods[methodName](input, offset)
 }
 
+const BOX_HEADER_SIZE = 8
+
 function readBox(input: Uint8Array, offset: number) {
   if (input.length - offset < 4) return
   const boxSize = readUInt32BE(input, offset)
@@ -74,6 +76,11 @@ function readBox(input: Uint8Array, offset: number) {
   }
 }
 
+// Advance past a box, guaranteeing forward progress even when its declared
+// size is smaller than its own 8-byte header (e.g. 0, from a crafted input)
+export const advanceBox = (offset: number, size: number): number =>
+  offset + Math.max(size, BOX_HEADER_SIZE)
+
 export function findBox(
   input: Uint8Array,
   boxName: string,
@@ -83,8 +90,6 @@ export function findBox(
     const box = readBox(input, currentOffset)
     if (!box) break
     if (box.name === boxName) return box
-    // Fix the infinite loop by ensuring offset always increases
-    // If box.size is 0, advance by at least 8 bytes (the size of the box header)
-    currentOffset += box.size > 0 ? box.size : 8
+    currentOffset = advanceBox(currentOffset, box.size)
   }
 }

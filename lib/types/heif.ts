@@ -1,5 +1,5 @@
 import type { IImage, ISize } from './interface'
-import { findBox, readUInt32BE, toUTF8String } from './utils'
+import { advanceBox, findBox, readUInt32BE, toUTF8String } from './utils'
 
 const brandMap = {
   avif: 'avif',
@@ -57,7 +57,7 @@ export const HEIF: IImage = {
 
       images.push({ height, width })
 
-      currentOffset = ispeBox.offset + ispeBox.size
+      currentOffset = advanceBox(ispeBox.offset, ispeBox.size)
     }
 
     if (images.length === 0) {
